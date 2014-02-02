@@ -22,30 +22,15 @@ namespace MiniBus
         {
             get
             {
-                RemoveAllExpiredSubscribers();
+                removeAllExpiredSubscribers();
                 return subscribers.Count;
             }
         }
 
-        public void SendMessage<T>(T message)
+        public IEnumerable<Subscriber<T>> FindSubscribersOfType<T>()
             where T : class, Message
         {
-            SendToSubscribers(message);
-        }
-
-        private void SendToSubscribers<T>(T message)
-            where T : class, Message
-        {
-            foreach (var subscriber in FindSubscribersOfType<T>())
-            {
-                InvokeSubscriberInNewTask(subscriber, message);
-            }
-        }
-
-        private IEnumerable<Subscriber<T>> FindSubscribersOfType<T>()
-            where T : class, Message
-        {
-            RemoveAllExpiredSubscribers();
+            removeAllExpiredSubscribers();
 
             return
                 subscribers
@@ -53,7 +38,32 @@ namespace MiniBus
                     .Select(wr => wr.Target as Subscriber<T>);
         }
 
-        private static void InvokeSubscriberInNewTask<T>(Subscriber<T> subscriber, T message)
+        public bool HasSubscriberFor<T>()
+            where T : class, Message
+        {
+            removeAllExpiredSubscribers();
+
+            return
+                subscribers
+                    .Exists(wr => wr.Target is Subscriber<T>);
+        }
+
+        public void SendMessage<T>(T message)
+            where T : class, Message
+        {
+            sendToSubscribers(message);
+        }
+
+        private void sendToSubscribers<T>(T message)
+            where T : class, Message
+        {
+            foreach (var subscriber in FindSubscribersOfType<T>())
+            {
+                invokeSubscriberInNewTask(subscriber, message);
+            }
+        }
+
+        private static void invokeSubscriberInNewTask<T>(Subscriber<T> subscriber, T message)
             where T : class, Message
         {
             if (subscriber == null)
@@ -62,7 +72,7 @@ namespace MiniBus
             new Task(() => subscriber.InvokeAction(message)).Start();
         }
 
-        private void RemoveAllExpiredSubscribers()
+        private void removeAllExpiredSubscribers()
         {
             subscribers.RemoveAll(wr => !wr.IsAlive);
             subscribers.RemoveAll(wr => wr.Target == null);
