@@ -93,6 +93,7 @@ namespace MiniBus
                 () => subscriber.InvokeAction(message));
 
             task.RunSynchronously();
+            System.Threading.Thread.Sleep(1);
         }
 
         private void removeAllExpiredSubscribers()
