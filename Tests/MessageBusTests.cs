@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading;
 
 using FluentAssertions;
@@ -124,5 +125,19 @@ namespace Tests
             threadB.Should().NotBe(threadC);
         }
 
+        [Test]
+        public void CopesWithHighConcurrencySending()
+        {
+            // Arrange
+            var received = new ConcurrentBag<TestMessageTypeA>();
+            for (var i = 0; i < 1000; i++)
+                bus.SubscriberFor<TestMessageTypeA>(received.Add);
+
+            // Act
+            bus.SendMessage(new TestMessageTypeA());
+
+            // Assert
+            received.Should().HaveCount(1000);
+        }
     }
 }

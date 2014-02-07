@@ -55,6 +55,21 @@ namespace Tests
             bus.GetSubscriberCount.Should().Be(0);
         }
 
+        [Test]
+        public void CopesWithHighConcurrencySubscriptions()
+        {
+            // Arrange
+            var bus = new MessageBus();
+
+            // Act
+            for (var i = 0; i < 1000; i++)
+                bus.SubscriberFor<Message>(NoAction);
+
+            // Assert
+            bus.GetSubscriberCount
+                .Should().Be(1000);
+        }
+
         private void NoAction(Message message) { }
     }
 }
