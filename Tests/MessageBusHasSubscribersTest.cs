@@ -11,17 +11,10 @@ namespace Tests
     [TestFixture]
     public class MessageBusHasSubscribersTest
     {
-        private MessageBus bus;
-
-        [TestFixtureSetUp]
-        public void SetUp()
-        {
-            bus = new MessageBus();
-        }
-
         [Test]
         public void FalseWithNoSubscribers()
         {
+            var bus = new MessageBus();
             bus.HasSubscriberFor<Message>()
                 .Should().BeFalse(
                     "no subscribers have been added");
@@ -30,6 +23,7 @@ namespace Tests
         [Test]
         public void TrueWithExactMatch()
         {
+            var bus = new MessageBus();
             bus.SubscriberFor<Message>(m => { });
             bus.HasSubscriberFor<Message>()
                 .Should().BeTrue(
@@ -39,6 +33,7 @@ namespace Tests
         [Test]
         public void FalseWithNonMatch()
         {
+            var bus = new MessageBus();
             bus.SubscriberFor<TestMessageTypeA>(m => { });
             bus.HasSubscriberFor<TestMessageTypeB>()
                 .Should().BeFalse(
@@ -48,6 +43,7 @@ namespace Tests
         [Test]
         public void TrueWithDerivedType()
         {
+            var bus = new MessageBus();
             bus.SubscriberFor<TestMessageBase>(m => { });
             bus.HasSubscriberFor<TestMessageTypeA>()
                 .Should().BeTrue(
@@ -57,10 +53,25 @@ namespace Tests
         [Test]
         public void FalseWithSuperType()
         {
+            var bus = new MessageBus();
             bus.SubscriberFor<TestMessageTypeA>(m => { });
             bus.HasSubscriberFor<TestMessageBase>()
                 .Should().BeFalse(
                     "subscriber for derived type was added");
+        }
+
+        [Test]
+        public void CanFindExplicitTypes()
+        {
+            var bus = new MessageBus();
+            bus.SubscriberFor<TestMessageBase>(m => { });
+            bus.SubscriberFor<TestMessageTypeA>(m => { });
+            bus.SubscriberFor<TestMessageTypeB>(m => { });
+
+            bus.FindSubscribersOfExplicitType(typeof(TestMessageTypeA))
+                .Should().HaveCount(1);
+            bus.FindSubscribersOfExplicitType(typeof(TestMessageBase))
+                .Should().HaveCount(1);
         }
     }
 }

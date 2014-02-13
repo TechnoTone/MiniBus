@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -6,7 +7,7 @@ using MiniBus;
 
 namespace Tests.TestSupport
 {
-    public class TestMessageBase : Message
+    public class TestMessageBase : Message, IDisposable
     {
         private readonly BlockingCollection<ReceivedEvent> receiverLog =
             new BlockingCollection<ReceivedEvent>();
@@ -27,6 +28,11 @@ namespace Tests.TestSupport
                 ReceiverThreadId = Thread.CurrentThread.ManagedThreadId
             });
             Thread.Sleep(20);
+        }
+
+        public void Dispose()
+        {
+            receiverLog.Dispose();
         }
     }
 }

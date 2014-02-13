@@ -9,8 +9,8 @@ namespace MiniBus
 {
     public class MessageBus
     {
-        private readonly ConcurrentDictionary<WeakReference, WeakReference> subscribers =
-            new ConcurrentDictionary<WeakReference, WeakReference>();
+        private readonly ConcurrentDictionary<WeakReference, Type> subscribers =
+            new ConcurrentDictionary<WeakReference, Type>();
 
         public Subscriber<T> SubscriberFor<T>(Action<T> action)
             where T : class, Message
@@ -18,7 +18,12 @@ namespace MiniBus
             var subscriber = new ActionSubscriber<T>(action);
 
             var weakReference = new WeakReference(subscriber);
-            if (!subscribers.TryAdd(weakReference, weakReference))
+            var added =
+                subscribers.TryAdd(
+                    weakReference,
+                    action.GetType().GenericTypeArguments[0]);
+
+            if (!added)
                 throw new InvalidAsynchronousStateException(
                     "Failed to add Subscriber");
 
@@ -34,25 +39,37 @@ namespace MiniBus
             }
         }
 
-        public IEnumerable<Subscriber<T>> FindSubscribersOfType<T>()
-            where T : class, Message
-        {
-            removeAllExpiredSubscribers();
-
-            return
-                subscribers.Values
-                    .Where(wr => wr.Target is Subscriber<T>)
-                    .Select(wr => wr.Target as Subscriber<T>);
-        }
-
         public bool HasSubscriberFor<T>()
             where T : class, Message
         {
             removeAllExpiredSubscribers();
 
             return
-                subscribers.Values
+                subscribers.Keys
                     .Any(wr => wr.Target is Subscriber<T>);
+        }
+
+        public IEnumerable<Subscriber<Message>>
+            FindSubscribersOfExplicitType(Type type)
+        {
+            return
+                subscribers
+                    .Keys
+                    .Where(
+                        wr =>
+                            isCorrectGenericType(type, wr) &&
+                            isSubscriberType(type, wr))
+                    .Select(wr => wr.Target as Subscriber<Message>);
+        }
+
+        private static bool isCorrectGenericType(Type type, WeakReference wr)
+        {
+            return wr.Target.GetType().GenericTypeArguments[0] == type;
+        }
+
+        private bool isSubscriberType(Type type, WeakReference wr)
+        {
+            return subscribers[wr] == type;
         }
 
         public void SendMessage<T>(T message)
@@ -64,23 +81,21 @@ namespace MiniBus
         private void sendToSubscribers<T>(T message)
             where T : class, Message
         {
-            var list = findSubscribersOfType<T>();
+            var list = findSubscribersOfType<T>().ToList();
             list.ForEach(
                 sub =>
                     invokeSubscriberInNewTask(sub, message));
         }
 
-        private List<Subscriber<T>> findSubscribersOfType<T>()
+        private IEnumerable<Subscriber<T>> findSubscribersOfType<T>()
             where T : class, Message
         {
             removeAllExpiredSubscribers();
 
             return
-                subscribers
-                    .Values
+                subscribers.Keys
                     .Where(wr => wr.Target is Subscriber<T>)
-                    .Select(wr => wr.Target as Subscriber<T>)
-                    .ToList();
+                    .Select(wr => wr.Target as Subscriber<T>);
         }
 
         private static void invokeSubscriberInNewTask<T>(Subscriber<T> subscriber, T message)
@@ -111,7 +126,7 @@ namespace MiniBus
 
         private void delete(WeakReference reference)
         {
-            WeakReference removed;
+            Type removed;
             subscribers.TryRemove(reference, out removed);
         }
     }
