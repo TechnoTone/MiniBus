@@ -45,12 +45,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MessageBus_CopesWithHeavyLoad.cs" />
+    <Compile Include="MessageBus_HandlesExceptions.cs" />
     <Compile Include="MessageBusHasSubscribersTest.cs" />
     <Compile Include="MessageBusSubscriberCountTests.cs" />
     <Compile Include="MessageBusTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestSupport\ReceivedEvent.cs" />
+    <Compile Include="TestSupport\RepeatingMessage.cs" />
     <Compile Include="TestSupport\TestMessageBase.cs" />
+    <Compile Include="TestSupport\MessageForwarder.cs" />
     <Compile Include="TestSupport\TestMessageReceiver.cs" />
     <Compile Include="TestSupport\TestMessageTypeA.cs" />
     <Compile Include="TestSupport\TestMessageTypeB.cs" />
@@ -64,6 +68,9 @@
       <Project>{60a5f376-4ae0-460d-9bb4-452589290407}</Project>
       <Name>MiniBus</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

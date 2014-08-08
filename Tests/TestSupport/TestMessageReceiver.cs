@@ -1,17 +1,26 @@
-﻿namespace Tests.TestSupport
+﻿using MiniBus;
+
+namespace Tests.TestSupport
 {
-    public class TestMessageReceiver
+  public class MessageRepeater
+  {
+    private readonly MessageBus bus;
+    private readonly int index;
+
+    public MessageRepeater(MessageBus bus, int index)
     {
-        private readonly string name;
-
-        public TestMessageReceiver(string name)
-        {
-            this.name = name;
-        }
-
-        public void Receive(TestMessageBase message)
-        {
-            message.Received(name);
-        }
+      this.bus = bus;
+      this.index = index;
     }
+
+    public void Receive(RepeatingMessage message)
+    {
+      if (message.Counter != index)
+        return;
+
+      message.Counter++;
+
+      bus.SendMessage(message);
+    }
+  }
 }
