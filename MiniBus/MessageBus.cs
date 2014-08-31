@@ -12,14 +12,11 @@ namespace MiniBus
     private readonly ConcurrentDictionary<WeakReference, Type> subscribers =
         new ConcurrentDictionary<WeakReference, Type>();
 
-    //private TaskRunner taskRunner;
-
     public Action<AggregateException> ExceptionListener { private get; set; }
 
     public MessageBus()
     {
       ExceptionListener = _ => { };
-      //taskRunner = new TaskRunner(aggregateException => ExceptionListener(aggregateException));
       TaskScheduler.UnobservedTaskException += taskExceptionHandler;
     }
 
