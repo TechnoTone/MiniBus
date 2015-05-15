@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>MiniBus</id>
+    <version>1.1</version>
+    <title>MiniBus</title>
+    <authors>Tony Hunt</authors>
+    <owners>Tony Hunt</owners>
+    <projectUrl>https://github.com/TechnoTone/MiniBus</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>MiniBus - Intra-app message bus</description>
+    <releaseNotes>First release.</releaseNotes>
+    <copyright>Copyright 2015</copyright>
+    <tags>message bus</tags>
+  </metadata>
+</package>
